@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.app.mapper.WXUserMapper">
+
+    <resultMap id="WxUserResult" type="WxUser">
+        <id column="open_id" jdbcType="VARCHAR" property="openId" />
+        <result column="nick_name" jdbcType="VARCHAR" property="nickName" />
+        <result column="avatar_url" jdbcType="VARCHAR" property="avatarUrl" />
+        <result column="phone" jdbcType="VARCHAR" property="phone" />
+        <result column="status" jdbcType="TINYINT" property="status" />
+        <result column="last_login_time" jdbcType="TIMESTAMP" property="lastLoginTime" />
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    </resultMap>
+
+    <sql id="Base_SQL_List">
+        select open_id, nick_name, avatar_url, phone, status,
+        last_login_time, create_time, update_time from wx_user
+    </sql>
+
+    <!-- 查询用户 -->
+    <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        <include refid="Base_SQL_List" />
+        where open_id = #{openId}
+    </select>
+
+</mapper>
