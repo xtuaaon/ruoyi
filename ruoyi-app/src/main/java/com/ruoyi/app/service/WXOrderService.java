@@ -30,6 +30,9 @@ public class WXOrderService {
     @Autowired
     public WXOrderMapper wxOrderMapper;
 
+    @Autowired
+    public OrderStreamService orderPublishService;
+
     /**
      * 创建订单
      */
@@ -48,7 +51,7 @@ public class WXOrderService {
             cacheOrderInRedis(order);
 
             // 4. 发送订单创建消息到Redis Stream
-            sendCreateOrderMessage(order);
+            orderPublishService.createOrder(order);
 
             // 5. 构建并返回结果
             return buildSuccessResult(order.getId());
@@ -147,24 +150,9 @@ public class WXOrderService {
         redisTemplate.expire(orderKey, 24, TimeUnit.HOURS);
 
         // 将订单ID添加到待接单集合
-        redisTemplate.opsForSet().add(RedisKeyConstants.PENDING_ORDER_SET, order.getId());
-    }
+        redisTemplate.opsForSet().add(RedisKeyConstants.PENDING_ORDER_SET + "global", order.getId());
 
-    /**
-     * 发送创建订单消息到Redis Stream
-     */
-    private void sendCreateOrderMessage(WXOrder order) {
-        Map<String, String> messageMap = new HashMap<>();
-        messageMap.put("orderId", order.getId());
-        messageMap.put("type", String.valueOf(order.getType()));
-        messageMap.put("status", String.valueOf(order.getStatus()));
-        messageMap.put("information", "创建订单");
-        messageMap.put("createTime", DateUtil.format(order.getCreateTime(), "yyyy-MM-dd HH:mm:ss"));
-        messageMap.put("creator", order.getCreator());
-
-        // 发送到Redis Stream
-        StreamOperations<String, Object, Object> streamOps = redisTemplate.opsForStream();
-        streamOps.add(RedisKeyConstants.ORDER_STREAM_KEY, messageMap);
+        redisTemplate.opsForSet().add(RedisKeyConstants.PENDING_ORDER_SET + "global", order.getId());
     }
 
     /**
