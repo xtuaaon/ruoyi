@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum OrderTypeEnum {
-    Plumbing(0, "Plumbing"),
-    Cement(1, "Cement"),
-    Carpentry(2, "Carpentry"),
-    Internet(3, "Internet");
+    Global(0, "Global"),
+    General(1, "General"),
+    Plumbing(2, "Plumbing"),
+    Cement(3, "Cement"),
+    Carpentry(4, "Carpentry"),
+    Internet(5, "Internet");
 
     private final int code;
     private final String desc;
@@ -36,6 +38,6 @@ public enum OrderTypeEnum {
     }
 
     public static OrderTypeEnum fromCode(int code) {
-        return CODE_MAP.getOrDefault(code, Plumbing); // 默认返回PLUMBING
+        return CODE_MAP.getOrDefault(code, General); // 默认返回PLUMBING
     }
 }

@@ -1,11 +1,7 @@
 package com.ruoyi.app.service;
 
-import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.date.DateUtil;
-import com.ruoyi.app.dto.inputdto.wxorder.acceptOrderInputDto;
 import com.ruoyi.app.dto.inputdto.wxorder.newOrderInputDto;
 import com.ruoyi.app.mapper.WXOrderMapper;
-import com.ruoyi.common.constant.RedisKeyConstants;
 import com.ruoyi.common.core.domain.entity.WXOrder;
 import com.ruoyi.common.enums.OrderStatusEnum;
 import com.ruoyi.common.exception.ServiceException;
@@ -14,24 +10,17 @@ import com.ruoyi.common.utils.uuid.IdUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StreamOperations;
-import org.springframework.data.redis.core.script.DefaultRedisScript;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 public class WXOrderService {
 
     private static final Logger log = LoggerFactory.getLogger(WXOrderService.class);
 
     @Autowired
-    public RedisTemplate<String, Object> redisTemplate;
-
-    @Autowired
     public WXOrderMapper wxOrderMapper;
 
     @Autowired
-    public OrderStreamService orderPublishService;
+    public OrderRedisService orderPublishService;
 
     /**
      * 创建订单
@@ -48,10 +37,10 @@ public class WXOrderService {
             }
 
             // 3. 将待接单订单信息添加到Redis
-            cacheOrderInRedis(order);
+            orderPublishService.createOrderZSet(order);
 
             // 4. 发送订单创建消息到Redis Stream
-            orderPublishService.createOrder(order);
+            orderPublishService.createOrderStream(order);
 
             // 5. 构建并返回结果
             return buildSuccessResult(order.getId());
@@ -62,67 +51,15 @@ public class WXOrderService {
     }
 
     /**
-     * 获取订单列表
+     * 分页获取待处理订单，使用时间戳作为游标
+     * @param lastTimestamp 上次查询的最小时间戳
+     * @param limit 每页数量
+     * @return 订单列表响应
      */
-    public List<String> getOrderList(){
-        List<String> result = new ArrayList<>();
-        // 从Redis Set中获取所有待接单的订单ID
-        Set<Object> pendingOrderIds = redisTemplate.opsForSet().members(RedisKeyConstants.PENDING_ORDER_SET);
-        if (pendingOrderIds == null || pendingOrderIds.isEmpty()) {
-            return result;
-        }
-        // 将Object类型转换为String类型
-        for (Object orderId : pendingOrderIds) {
-            result.add(orderId.toString());
-        }
-        return result;
-    }
+    public Map<String, Object> getPendingOrders(long lastTimestamp,int orderType, int limit) {
 
-    /**
-     * 接受订单
-     */
-    public boolean acceptOrder(acceptOrderInputDto inputDto){
-        String orderId = inputDto.getOrderId();
-        int type = inputDto.getType();
-        String userId = inputDto.getRecipient();
-        String creator = inputDto.getCreator();
-        // 使用Lua脚本保证原子性操作
-        String luaScript =
-                "local orderKey = KEYS[1] " +
-                        "local pendingOrdersKey = KEYS[2]"+
-                        "local assignedKey = KEYS[3] " +
-                        "if redis.call('hget', orderKey, 'status') == 'PENDING' then " +
-                        "  redis.call('hset', orderKey, 'status', 'ASSIGNED', 'assignedTo', ARGV[1], 'assignedTime', ARGV[2]) " +
-                        "  redis.call('sadd', assignedKey, ARGV[3]) " +
-                        "  redis.call('srem', pendingOrdersKey, ARGV[3]) "+
-                        "  return 1 " +
-                        "else " +
-                        "  return 0 " +
-                        "end";
 
-        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
-        redisScript.setScriptText(luaScript);
-        redisScript.setResultType(Long.class);
-
-        Long result = redisTemplate.execute(
-                redisScript,
-                Arrays.asList(
-                        orderId,                                              // KEYS[1] - 订单键
-                        RedisKeyConstants.PENDING_ORDER_SET,                  // KEYS[2] - 待接单集合键
-                        RedisKeyConstants.ACCEPTED_ORDER_PREFIX + userId      // KEYS[3] - 用户已抢订单集合键
-                ),
-                userId,
-                String.valueOf(System.currentTimeMillis()),
-                orderId
-        );
-
-        if (result == 1) {
-            sendAcceptOrderMessage(orderId,type,userId,creator);
-            return true;
-        }
-        else {
-            return false;
-        }
+        return new OrderListResponse(orders, hasMore, newLastTimestamp);
     }
 
     private WXOrder buildOrderFromInput(newOrderInputDto inputDto) {
@@ -136,40 +73,6 @@ public class WXOrderService {
         order.setCreateTime(new Date());
         // 可以添加更多字段设置
         return order;
-    }
-
-    /**
-     * 将订单信息缓存到Redis
-     */
-    private void cacheOrderInRedis(WXOrder order) {
-        String orderKey = order.getId();
-        // 使用Hash结构存储订单信息
-        Map<String, Object> orderMap = BeanUtil.beanToMap(order);
-        redisTemplate.opsForHash().putAll(orderKey, orderMap);
-        // 设置过期时间
-        redisTemplate.expire(orderKey, 24, TimeUnit.HOURS);
-
-        // 将订单ID添加到待接单集合
-        redisTemplate.opsForSet().add(RedisKeyConstants.PENDING_ORDER_SET + "global", order.getId());
-
-        redisTemplate.opsForSet().add(RedisKeyConstants.PENDING_ORDER_SET + "global", order.getId());
-    }
-
-    /**
-     * 发送接受订单消息到Redis Stream
-     */
-    private void sendAcceptOrderMessage(String orderId,int type, String recipient ,String creator) {
-        Map<String, String> messageMap = new HashMap<>();
-        messageMap.put("orderId", orderId);
-        messageMap.put("type", String.valueOf(type));
-        messageMap.put("status", String.valueOf(OrderStatusEnum.ACCEPTED.getCode()));
-        messageMap.put("information", "接受订单");
-        messageMap.put("createTime", DateUtil.format(new Date(), "yyyy-MM-dd HH:mm:ss"));
-        messageMap.put("creator", creator);
-
-        // 发送到Redis Stream
-        StreamOperations<String, Object, Object> streamOps = redisTemplate.opsForStream();
-        streamOps.add(RedisKeyConstants.ORDER_STREAM_KEY, messageMap);
     }
 
     /**

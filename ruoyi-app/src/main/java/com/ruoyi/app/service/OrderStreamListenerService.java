@@ -36,10 +36,11 @@ public class OrderStreamListenerService {
         try {
             // 确保消费者组存在
             try {
-                redisTemplate.opsForStream().createGroup(streamKey, groupName);
+                redisTemplate.opsForStream().createGroup(streamKey, ReadOffset.from("0"), groupName);
             }
             catch (Exception e) {
                 // 组可能已存在，忽略异常
+                log.warn("创建消费者组异常，可能已存在: {}", e.getMessage());
             }
 
             String lastId = ">"; // 只消费新消息
@@ -54,16 +55,18 @@ public class OrderStreamListenerService {
 
                     if (records != null && !records.isEmpty()) {
                         // 处理订单记录
-                        List<Map<String, Object>> orderList = new ArrayList<>();
+                        List<Map<String, Object>> orderEvents = new ArrayList<>();
 
                         for (MapRecord<String, Object, Object> record : records) {
                             String recordId = record.getId().getValue();
                             Map<Object, Object> value = record.getValue();
 
-                            // 转换为订单对象
-                            Map<String, Object> order = new HashMap<>();
-                            value.forEach((k, v) -> order.put(k.toString(), v));
-                            orderList.add(order);
+                            // 转换为事件对象
+                            Map<String, Object> event = new HashMap<>();
+                            value.forEach((k, v) -> event.put(k.toString(), v));
+                            event.put("eventId", recordId);
+                            event.put("orderType", orderType);
+                            orderEvents.add(event);
 
                             // 确认消息处理完成
                             redisTemplate.opsForStream().acknowledge(streamKey, groupName, recordId);
@@ -71,9 +74,11 @@ public class OrderStreamListenerService {
                             lastId = recordId;
                         }
 
-                        // 将订单列表广播给对应类型的WebSocket客户端
-                        String orderListJson = JSON.toJSONString(orderList);
-                        OrderWebSocketServer.broadcastToOrderType(orderType, orderListJson);
+                        // 将订单事件广播给订阅了该类型的用户
+                        String eventsJson = JSON.toJSONString(orderEvents);
+
+                        // 直接使用OrderWebSocketServer的广播方法向特定订单类型频道发送消息
+                        OrderWebSocketServer.broadcastToOrderType(orderType, eventsJson);
                     }
                 }
                 catch (Exception e) {
