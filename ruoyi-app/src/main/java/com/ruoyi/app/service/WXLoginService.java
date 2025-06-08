@@ -1,14 +1,17 @@
 package com.ruoyi.app.service;
 
+import com.ruoyi.app.impl.WXLoginServiceImpl;
 import com.ruoyi.common.core.domain.entity.WXUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class WXLoginService {
+@Service
+public class WXLoginService implements WXLoginServiceImpl {
     @Value("${wechat.appId}")
     private String appId;
 
@@ -25,6 +28,7 @@ public class WXLoginService {
     private WXTokenService _WXTokenService;
 
 
+    @Override
     public Map<String, Object> Login(String code){
         String url = "https://api.weixin.qq.com/sns/jscode2session?appid=" + appId +
                 "&secret=" + appSecret +
@@ -77,6 +81,7 @@ public class WXLoginService {
     }
 
 
+    @Override
     public Map<String, Object> register(WXUser user){
         _WXUserService.insertUser(user);
         Map<String, Object> result = new HashMap<>();

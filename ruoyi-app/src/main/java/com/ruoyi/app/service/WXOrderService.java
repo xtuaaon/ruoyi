@@ -50,17 +50,17 @@ public class WXOrderService {
         }
     }
 
-    /**
-     * 分页获取待处理订单，使用时间戳作为游标
-     * @param lastTimestamp 上次查询的最小时间戳
-     * @param limit 每页数量
-     * @return 订单列表响应
-     */
-    public Map<String, Object> getPendingOrders(long lastTimestamp,int orderType, int limit) {
-
-
-        return new OrderListResponse(orders, hasMore, newLastTimestamp);
-    }
+//    /**
+//     * 分页获取待处理订单，使用时间戳作为游标
+//     * @param lastTimestamp 上次查询的最小时间戳
+//     * @param limit 每页数量
+//     * @return 订单列表响应
+//     */
+//    public Map<String, Object> getPendingOrders(long lastTimestamp,int orderType, int limit) {
+//
+//
+//        return new OrderListResponse(orders, hasMore, newLastTimestamp);
+//    }
 
     private WXOrder buildOrderFromInput(newOrderInputDto inputDto) {
         WXOrder order = new WXOrder();
