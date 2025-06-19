@@ -1,5 +1,6 @@
 package com.ruoyi.app.service;
 
+import com.ruoyi.app.impl.IWXTokenService;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.entity.WXUser;
 import com.ruoyi.common.core.redis.RedisCache;
@@ -9,13 +10,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import com.ruoyi.framework.web.service.TokenService;
-
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class WXTokenService extends TokenService
+public class WXTokenService extends TokenService implements IWXTokenService
 {
     private static final Logger log = LoggerFactory.getLogger(WXTokenService.class);
 

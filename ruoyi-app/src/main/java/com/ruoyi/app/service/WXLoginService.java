@@ -1,6 +1,6 @@
 package com.ruoyi.app.service;
 
-import com.ruoyi.app.impl.WXLoginServiceImpl;
+import com.ruoyi.app.impl.IWXLoginService;
 import com.ruoyi.common.core.domain.entity.WXUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
-public class WXLoginService implements WXLoginServiceImpl {
+public class WXLoginService implements IWXLoginService {
     @Value("${wechat.appId}")
     private String appId;
 
