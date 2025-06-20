@@ -9,14 +9,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 import com.ruoyi.framework.web.service.TokenService;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Service
 public class WXTokenService extends TokenService implements IWXTokenService
 {
-    private static final Logger log = LoggerFactory.getLogger(WXTokenService.class);
 
     // 令牌自定义标识
     @Value("${token.header}")

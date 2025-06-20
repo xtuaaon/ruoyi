@@ -1,6 +1,8 @@
 package com.ruoyi.app.service;
 
 import com.ruoyi.app.impl.IWXLoginService;
+import com.ruoyi.app.impl.IWXTokenService;
+import com.ruoyi.app.impl.IWXUserService;
 import com.ruoyi.common.core.domain.entity.WXUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,10 +24,10 @@ public class WXLoginService implements IWXLoginService {
     private RestTemplate restTemplate;
 
     @Autowired
-    private WXUserService _WXUserService;
+    private IWXUserService _WXUserService;
 
     @Autowired
-    private WXTokenService _WXTokenService;
+    private IWXTokenService _WXTokenService;
 
 
     @Override

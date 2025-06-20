@@ -53,20 +53,6 @@ public class MasterRedisService {
                             "OFFLINE".equals(statusInfo.get("status"))) {
                         continue;
                     }
-
-                    // 4. 从数据库获取完整的师傅信息
-                    // 注意：这里应该根据你的实际情况调用相应的Service或Repository
-                    WXMaster master = masterService.getByOpenId(masterId);
-
-                    if (master != null) {
-                        // 5. 更新师傅的位置和距离信息
-                        master.setLatitude(position.getY());
-                        master.setLongitude(position.getX());
-                        master.setOnlineStatus((String) statusInfo.get("status"));
-
-                        // 6. 添加到结果列表
-                        result.add(master);
-                    }
                 }
             }
         } catch (Exception e) {
