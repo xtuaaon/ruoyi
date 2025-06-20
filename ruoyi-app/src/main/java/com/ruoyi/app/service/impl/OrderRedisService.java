@@ -1,4 +1,4 @@
-package com.ruoyi.app.service;
+package com.ruoyi.app.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;

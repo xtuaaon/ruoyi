@@ -1,4 +1,4 @@
-package com.ruoyi.app.service;
+package com.ruoyi.app.service.impl;
 
 import com.ruoyi.common.core.domain.entity.WXMaster;
 import org.slf4j.Logger;

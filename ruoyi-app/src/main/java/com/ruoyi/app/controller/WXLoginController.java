@@ -1,7 +1,6 @@
 package com.ruoyi.app.controller;
 
-import com.ruoyi.app.impl.IWXLoginService;
-import com.ruoyi.app.service.WXLoginService;
+import com.ruoyi.app.service.IWXLoginService;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.domain.entity.WXUser;

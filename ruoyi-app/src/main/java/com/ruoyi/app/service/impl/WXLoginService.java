@@ -1,8 +1,8 @@
-package com.ruoyi.app.service;
+package com.ruoyi.app.service.impl;
 
-import com.ruoyi.app.impl.IWXLoginService;
-import com.ruoyi.app.impl.IWXTokenService;
-import com.ruoyi.app.impl.IWXUserService;
+import com.ruoyi.app.service.IWXLoginService;
+import com.ruoyi.app.service.IWXTokenService;
+import com.ruoyi.app.service.IWXUserService;
 import com.ruoyi.common.core.domain.entity.WXUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

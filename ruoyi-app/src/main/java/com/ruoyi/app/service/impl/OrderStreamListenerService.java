@@ -1,4 +1,4 @@
-package com.ruoyi.app.service;
+package com.ruoyi.app.service.impl;
 
 
 import com.alibaba.fastjson2.JSON;

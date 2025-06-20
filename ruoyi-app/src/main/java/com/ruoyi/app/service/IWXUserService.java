@@ -1,4 +1,4 @@
-package com.ruoyi.app.impl;
+package com.ruoyi.app.service;
 
 import com.ruoyi.common.core.domain.entity.WXUser;
 

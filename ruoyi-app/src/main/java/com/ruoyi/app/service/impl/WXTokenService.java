@@ -1,12 +1,10 @@
-package com.ruoyi.app.service;
+package com.ruoyi.app.service.impl;
 
-import com.ruoyi.app.impl.IWXTokenService;
+import com.ruoyi.app.service.IWXTokenService;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.core.domain.entity.WXUser;
 import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.common.utils.uuid.IdUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
